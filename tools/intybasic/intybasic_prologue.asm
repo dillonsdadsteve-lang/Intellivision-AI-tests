@@ -27,13 +27,10 @@
 	; Revision: Jan/10/2018. Added ECS detection.
 	;
 
-
     LISTING "off"
 
 ;;==========================================================================;;
 ;; IntyBASIC SDK Library: romseg-bs.mac                                     ;;
-;;  Version:    1.2                                                         ;;
-;;  Updated:    2026-03-20                                                  ;;
 ;;--------------------------------------------------------------------------;;
 ;;  This macro library is used by the IntyBASIC SDK to manage ROM address   ;;
 ;;  segments and generate statistics on program ROM usage.  It is an        ;;
@@ -47,7 +44,7 @@
 ;;--------------------------------------------------------------------------;;
 ;;      The file is placed into the public domain by its author.            ;;
 ;;      All copyrights are hereby relinquished on the routines and data in  ;;
-;;      this file.  -- James Pujals (DZ-Jay), 2024-2026                     ;;
+;;      this file.  -- James Pujals (DZ-Jay), 2024-2025                     ;;
 ;;==========================================================================;;
 
 ;; ======================================================================== ;;
@@ -222,7 +219,8 @@ MACRO   __rom_validate_seg_bank(seg, bank)
         ; Validate the bank
         IF (_rom.error = _rom.null)
 
-_rom.max    QSET    (_rom.bnkcnt[%seg%] - 1)
+_rom.num    QSET    _rom.segidx[%seg%]
+_rom.max    QSET    (_rom.bnkcnt[_rom.num] - 1)
 
             IF (((%bank%) < 0) OR ((%bank%) > _rom.max))
                 __rom_raise_error(["Invalid bank number #", $#(%bank%), " for dynamic ROM segment #", $#(%seg%)], ["Must be between 0 and ", $#(_rom.max), "."])
@@ -248,7 +246,8 @@ MACRO   __rom_validate_segnum(segnum)
             __rom_raise_error(["Unknown internal ROM segment number #", $#(%segnum%), "."], _rom.null)
         ELSE
 
-_rom.max    QSET    (_rom.segcnt - 1)  ; Max internal index
+_rom.type   QSET    _rom.t[%segnum%]
+_rom.max    QSET    (.ROM.Segments[_rom.type] - 1)
 
             IF _EXPMAC (((%segnum%) < 0) OR ((%segnum%) > _rom.max))
                 __rom_raise_error(["Invalid internal segment number #", $#(%segnum%), " for selected memory map"], ["Must be a value between 0 and ", $#(_rom.max), "."])
@@ -1142,7 +1141,7 @@ MACRO   ROM.SelectDefaultSegment
     LISTING "code"
 
                 __rom_reset_error
-                __rom_assert_setup("SelectDefaultSegment")
+                __rom_assert_setup("SelectSegment")
 
         IF (_rom.error = _rom.null)
 
@@ -1349,45 +1348,6 @@ _rom.r_addr         QSET    (_rom.r_addr + _rom.pgsize)
     LISTING "prev"
 ENDM
 
-;; ======================================================================== ;;
-;;  ROM.SwitchDefaultBank                                                   ;;
-;;  Switches all dynamic ROM segments their default bank (#0). This ensures ;;
-;;  that segments larger than 4K are properly initialized..                 ;;
-;;                                                                          ;;
-;;  ARGUMENTS                                                               ;;
-;;      None.                                                               ;;
-;;                                                                          ;;
-;;  OUTPUT                                                                  ;;
-;;      _rom.error  -1 on failure.                                          ;;
-;; ======================================================================== ;;
-MACRO   ROM.SwitchDefaultBank
-;
-    LISTING "code"
-
-                __rom_reset_error
-                __rom_assert_setup("SwitchDefaultBank")
-
-      IF (_rom.error = _rom.null)
-
-        IF (_rom.map > 0)
-_rom.idx        QSET    .ROM.Segments[_rom.static]
-_rom.cnt        QSET    (_rom.segs - _rom.idx)
-
-          IF (_rom.cnt > 0)
-            REPEAT (_rom.cnt)
-
-                ROM.SwitchBank _rom.idx, 0
-
-_rom.idx        QSET    (_rom.idx + 1)
-            ENDR
-
-          ENDI
-        ENDI
-
-      ENDI
-
-    LISTING "prev"
-ENDM
 
 ;; ======================================================================== ;;
 ;;  ROM.End                                                                 ;;
@@ -1576,15 +1536,13 @@ MEMSET:
 	; Note mark is for automatic replacement by IntyBASIC
 _TITLE:
         BYTE 114, 'IntyBASIC program', 0 ;IntyBASIC MARK DON'T CHANGE
-
+        
 	;
 	; Main program
 	;
 _MAIN:
 	DIS			; Disable interrupts
 	MVII #STACK,R6
-
-    ROM.SwitchDefaultBank
 
 	;
 	; Clean memory
