@@ -11,9 +11,9 @@ http://spatula-city.org/~im14u2c/intv/ . They are not committed here
 (`tools/jzintv/` is git-ignored).
 
 ## Layout
-jzintv, as1600 and the other jzintv utilities (`*.exe`) plus the BIOS ROMs
-(`exec.bin`, `grom.bin`, `ECS.BIN`) sit directly in `tools/`. The build scripts
-use them from there.
+jzintv, as1600 and the other jzintv utilities (`*.exe`) 
+sit directly in `tools/`. The BIOS ROMs (`exec.bin`, `grom.bin`, `ECS.BIN`, `ECSPATCH.BIN`) are
+copyrighted and NOT in the repo: copy them into `tools/` on your own PC (they are git-ignored).
 
 IntyBASIC still needs compiling (not yet provided as an .exe):
 - Windows (MinGW/MSYS2): `g++ -O2 -o tools/intybasic/intybasic.exe tools/intybasic/*.cpp`

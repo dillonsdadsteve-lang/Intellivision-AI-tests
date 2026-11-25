@@ -13,3 +13,10 @@ tools/intybasic/intybasic
 tools/intybasic/intybasic.exe
 
 # Third-party binaries/ROMs (do not commit; download locally)
+
+# BIOS ROMs (copyrighted; keep local only)
+tools/exec.bin
+tools/grom.bin
+tools/ECS.BIN
+tools/ECSPATCH.BIN
+tools/ivoice.bin
