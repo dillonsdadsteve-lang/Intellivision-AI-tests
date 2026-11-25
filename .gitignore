@@ -13,5 +13,3 @@ tools/intybasic/intybasic
 tools/intybasic/intybasic.exe
 
 # Third-party binaries/ROMs (do not commit; download locally)
-tools/jzintv/
-tools/ROMs/

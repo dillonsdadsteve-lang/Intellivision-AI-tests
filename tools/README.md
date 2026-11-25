@@ -10,18 +10,19 @@ jzintv and as1600 are distributed together by Joe Zbiciak at
 http://spatula-city.org/~im14u2c/intv/ . They are not committed here
 (`tools/jzintv/` is git-ignored).
 
-## Setup
-1. Download the jzintv package for your OS from the page above and unzip it so you have
-   `tools/jzintv/bin/as1600(.exe)` and `tools/jzintv/bin/jzintv(.exe)`.
-2. Put `exec.bin`, `grom.bin` (and optionally `ecs.bin`, `ivoice.bin`) in `tools/jzintv/rom/`.
-   These BIOS ROMs are copyrighted and must come from you; do not commit them.
-3. Build IntyBASIC:
-   - Linux/macOS: `make -C tools/intybasic`
-   - Windows: in a MinGW or MSYS2 shell, `g++ -O2 -o tools/intybasic/intybasic.exe tools/intybasic/*.cpp`
-4. Build and run:
-   - `scripts/build.sh src/hello.bas run`
-   - `.\scripts\build.ps1 src\hello.bas -Run`
+## Layout
+jzintv, as1600 and the other jzintv utilities (`*.exe`) plus the BIOS ROMs
+(`exec.bin`, `grom.bin`, `ECS.BIN`) sit directly in `tools/`. The build scripts
+use them from there.
 
-Shared includes such as `constants.bas` live in `src/`.
+IntyBASIC still needs compiling (not yet provided as an .exe):
+- Windows (MinGW/MSYS2): `g++ -O2 -o tools/intybasic/intybasic.exe tools/intybasic/*.cpp`
+- Linux/macOS: `make -C tools/intybasic`
 
-Output goes to `build/` (git-ignored).
+jzintv.exe needs the SDL runtime DLL next to it; if it fails to start, copy that DLL into `tools/`.
+
+## Build and run
+- `.\scripts\build.ps1 src\hello.bas -Run`
+- `scripts/build.sh src/hello.bas run`
+
+Shared includes such as `constants.bas` live in `src/`. Output goes to `build/` (git-ignored).
