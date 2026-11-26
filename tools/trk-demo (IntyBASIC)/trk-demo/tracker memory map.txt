@@ -1,0 +1,56 @@
+---------------------------------------------------------
+This is the memory map of the tracker's array structures.
+The addresses below may aid in debugging.
+---------------------------------------------------------
+
+array_TRK_BYTEVAR:  $010C
+    $010C + 00 = $010C  CHN_STATE
+    $010C + 01 = $010D  MASTER_FADER
+    $010C + 02 = $010D  TRK_MEM_START
+
+    $010C + 02 = $010D  REF_M
+    $010C + 03 = $010E  COUNT_M
+    $010C + 04 = $010F  COUNT_P
+    $010C + 05 = $0110  PAT
+    $010C + 06 = $0111  NOTE_A
+    $010C + 07 = $0112  NOTE_B
+    $010C + 08 = $0113  NOTE_C
+    $010C + 09 = $0114  NOTE_D
+    $010C + 0A = $0115  NOTE_E
+    $010C + 0B = $0116  NOTE_F
+    $010C + 0C = $0117  REF_A
+    $010C + 0D = $0118  REF_B
+    $010C + 0E = $0119  REF_C
+    $010C + 0F = $011A  REF_D
+    $010C + 10 = $011B  REF_E
+    $010C + 11 = $011C  REF_F
+    $010C + 12 = $011D  VOL_A
+    $010C + 13 = $011E  VOL_B
+    $010C + 14 = $010F  VOL_C
+    $010C + 15 = $0120  VOL_D
+    $010C + 16 = $0121  VOL_E
+    $010C + 17 = $0122  VOL_F
+    $010C + 18 = $0123  INSTR_A
+    $010C + 19 = $0124  INSTR_B
+    $010C + 1A = $0125  INSTR_C
+    $010C + 1B = $0126  INSTR_D
+    $010C + 1C = $0127  INSTR_E
+    $010C + 1D = $0128  INSTR_F
+    $010C + 1E = $0129  COUNT_A
+    $010C + 1F = $012A  COUNT_B
+    $010C + 20 = $012B  COUNT_C
+    $010C + 21 = $012C  COUNT_D
+    $010C + 22 = $012D  COUNT_E
+    $010C + 23 = $012E  COUNT_F
+
+    $0022 TRK_MEM_SIZE
+
+array_&TRK_WORDVAR:  $0308
+    $0308 + 00 = $0308  SONG
+    $0308 + 01 = $0309  INS_PTR
+    $0308 + 02 = $030A  POS_A
+    $0308 + 03 = $030B  POS_B
+    $0308 + 04 = $030C  POS_C
+    $0308 + 05 = $030D  POS_D
+    $0308 + 06 = $030E  POS_E
+    $0308 + 07 = $030F  POS_F

@@ -1,0 +1,247 @@
+NAME
+    ibn2imt.pl - Translates an IBN music file into Intellivision Music
+    Tracker format.
+
+SYNOPSIS
+    ibn2imt.pl [options] [source] [-o [output]]
+
+     Options:
+        -h  --help              Brief help message
+        -m  --manual            Full user manual documentation
+        -c  --channels          Number of channels to output (3 or 6)
+        -n  --note-len          Note length, in rows (defaults to 1)
+        -o  --out               Output filename
+        -p  --pat-len           Pattern length, in rows (defaults to auto-select)
+        -r  --repeat            Enable automatic repeat at end of song
+        -x  --export-man        Export user manual
+
+     Arguments:
+        source                  IBN source filename (required)
+        output                  IMT output filename (optional)
+
+OPTIONS
+    -h --help
+        Prints a brief help message on usage and exits.
+
+    -m --manual
+        Prints the full user manual page and exits.
+
+    -c --channels
+        The number of channels to output, 3 or 6. This value must coincide
+        with the tracker configuration that you plan to use.
+
+    -n --note-len
+        The length of notes to apply, in rows. All notes read from the IBN
+        source will be translated into tracker events of the given note
+        length. The default is each note takes one row.
+
+    -o --out
+        The name of the output file. If not provided, the default is the
+        source name with an "asm" extension.
+
+    -p --pat-len
+        The length of patterns, in rows. The source IBN song stream will be
+        split into patterns of the given length. If no length is provided,
+        the default is to attempt to determine the most optimal length.
+
+    -r --repeat
+        Indicates whether the song sequence should end with an automatic
+        repeat indicator. The default is to follow the IBN closing command
+        ("MUSIC STOP" or "MUSIC REPEAT").
+
+        Note that this option only changes the default behaviour when
+        encountering a closing command. If the song ends with a "MUSIC JUMP"
+        command pointing to a previous section, it will take precedence.
+
+    -x --export-man
+        Exports the full user manual page as a text file and exits.
+
+ARGUMENTS
+    source
+        The filename of the IBN source to translate. This argument is
+        required.
+
+    output
+        The filename of the translated IMT output. This argument is
+        optional. If not provided "ibn2imt.pl" will use the source filename
+        with an "asm" extension.
+
+DESCRIPTION
+    This program will translate a music module composed in IntyBASIC
+    Notation (IBN), into the data format used by the Intellivision Music
+    Tracker (IMT). The result is an assembly source file with the original
+    song represented in the target format.
+
+    The output file includes instrument definitions that attempt to
+    reproduce the IntyBASIC sounds.
+
+    By default, the program will produce output to support 6 channels,
+    following the default configuration of the Intellivision Music Tracker.
+    It will also try to determine automatically the most optimal length of
+    patterns to use, removing duplicate patterns across all channels.
+
+    The default behaviour can be altered with command line options.
+
+  How It Works
+    The crucial problem that "ibn2imt.pl" attempts to address is how to
+    identify patterns, and how to determine an optimal pattern length in
+    which to split the song data. The solution it employs is actually to
+    apply *brute-force*.
+
+    First, the program scans the original BASIC source file and identifies
+    all the labels and music player commands, extracting a stream of note
+    events (the *song stream*) and splitting them into *channels*. Any music
+    subroutines encountered via the command "MUSIC GOSUB" are "unrolled" and
+    included *inline* as part of the song stream.
+
+    Throughout this entire pre-processing step, the volume and active
+    instrument of each channel are tracked.
+
+    Then, operating on each extracted channel in turn, the program splits
+    the song stream into patterns of various row lengths, starting at 4 and
+    increasing the length by two, all the way to 256. At each split, it
+    attempts to deduplicate re-occurring patterns across all channels, and
+    computes an estimate of the size of the data needed to reproduce it.
+
+    At the end, the program compares the relative sizes of the data at each
+    split length, and chooses the smallest one. This is assumed to be the
+    optimal length with a balance between rows and data size.
+
+    If a specific pattern length is given in the command line, the automatic
+    detection is short-circuited, and patterns are split accordingly.
+
+    The selected pattern split is then rendered in the Intellivision Music
+    Tracker (IMT) format by emitting the sequence of reused patterns, the
+    channel patterns, and their individual event sub-patterns.
+
+    All labels in the original source are tracked throughout processing and
+    pattern extraction. When emitting output, any patterns corresponding to
+    a labeled section will include a comment for reference.
+
+  Caveats
+    *   You must ensure that the source file contains *only* song statements
+        in valid IntyBASIC Music Notation (IBN), or else you may not get the
+        results that you expect.
+
+    *   Variable song speed is not supported by the Intellivision Music
+        Tracker. Therefore, the "MUSIC SPEED" command simply overwrites the
+        last known speed. Subsequent speed changes trump all previous ones,
+        so that the last one encountered sets the final speed of the entire
+        song.
+
+    *   The program works best when the original song is naturally organized
+        into repeating groups of notes, or musical passages, of the same
+        length. If the source song starts with, say a couple of notes at the
+        end of a measure, you should pad it with silence so that it conforms
+        to the same length as the rest of the measures in the song.
+        Otherwise, the pattern-splitting process will not identify patterns
+        properly.
+
+    *   Because the implementation of the Intellivision Music Tracker
+        synthesizer is different from that of the IntyBASIC music player,
+        the instrument sounds will only be approximations. Specifically, the
+        more intricate *vibrato* effect applied to the flute and clarinet
+        instruments in IntyBASIC, is implemented as a simple
+        *LFO modulation* in the tracker.
+
+    *   The commands "MUSIC STOP" and "MUSIC REPEAT" are interpreted as the
+        end of the song. Therefore, any subsequent statements will be
+        ignored unless referenced in some other way.
+
+    *   You should take care to ensure that control-flow commands such as
+        "MUSIC JUMP" and "MUSIC GOSUB" follow a coherent and logical flow.
+        Chaotic jumping around in your song may not translate correctly into
+        an Intellivision Music Tracker (IMT) pattern sequence.
+
+    *   Contrary to IntyBASIC, "ibn2imt.pl" treats subsequent "MUSIC GOSUB"
+        commands as nested subroutine calls. This shouldn't be a problem
+        under normal circumstances. However, you must be exceptionaly
+        careful when exiting a subroutine prematurely via a "MUSIC JUMP"
+        command, since it may result in unbalanced "GOSUB/RETURN" pairs.
+
+    *   Because pattern extraction occurs independently of label
+        positioning, there is a chance that labels will not line up with the
+        start of a pattern. Consequently, determining the *backtracking*
+        offset from the target of a "MUSIC JUMP" command may fail. In such
+        event, the program will default to an *end-of-song* marker.
+
+  Known Issues & Limitations
+    *   Error checking is superficial at best. A valid and coherent
+        IntyBASIC Notation (IBN) file is expected, so be careful that your
+        song data is correct.
+
+    *   Drum arguments are read and extracted, but completely ignored during
+        processing.
+
+    *   The control-flow command "MUSIC JUMP" is treated in a special way:
+
+        *   If it points forward into the song stream, it will skip all
+            notes until that point.
+
+        *   If it points backwards to a previously encountered label, it
+            will signal the end of the song and set the target as the repeat
+            offset for *backtracking* at the end of the sequence.
+
+        *   If a target pattern cannot be determined for some reason, it
+            will default to the *end-of-song* marker.
+
+        In all cases, any notes following the command will be ignored,
+        unless referenced in some other way.
+
+    *   The performance command "MUSIC SPEED" will override the actual speed
+        of the entire song, not just of the following sections.
+
+AUTHOR
+    "IBN-to-IMT" ("ibn2imt.pl") was designed and developed by James Pujals,
+    a.k.a. *DZ-Jay*. If you have any feedback, good or bad (hopefully good),
+    you can contact James at <dz-game@techunlimited.net>.
+
+ACKNOWLEDGEMENTS
+    This program would not have *any reason* to exist if it were not for the
+    fabulous work by Arnauld Chevallier and Óscar Toledo, respective authors
+    of the original Intellivision Music Tracker and IntyBASIC.
+
+    Their gracious generosity in sharing their hard work with the community
+    is what inspired me to do the same, with the hope of enriching the
+    musical canon of our favorite gaming console.
+
+    So, if you ever get a chance to meet Arnauld or Óscar in person, buy
+    them a beer or three.
+
+SUPPORT
+    For support inquiries, bug reports, or feature requests, your best bet
+    is to post a comment in one of the typical fora where Intellivision
+    programmers hang out, such as:
+
+    IntvPROG Mailing List
+        URL: <https://groups.io/g/intvprog>
+
+        E-mail: intvprog@groups.io
+
+    Atari Age Intellivision Programming Forum
+        URL:
+        https://atariage.com/forums/forum/144-intellivision-programming/
+
+    If all else fails and you can't get the help you need, you can always
+    contact the author directly. He's cool. :)
+
+EXAMPLES
+    ibn2imt.pl -h
+        Produces a brief description of usage.
+
+    ibn2imt.pl -m
+        Produces the full usage manual page.
+
+    ibn2imt.pl mysong.bas
+        Translates source file "mysong.bas", automatically detecting the
+        optimal pattern length, and renders the output as six channels in
+        file "mysong.asm".
+
+    ibn2imt.pl -p 32 ibn_song.bas -o imt_song.asm
+        Translates source file "ibn_song.bas" using a pattern length of 32
+        rows, and renders the output as six channels in file "imt_song.asm".
+
+    ibn2imt.pl -c 3 -p 16 mysong.bas
+        Translates source file "mysong.bas" using a pattern length of 16
+        rows, and renders the output as three channels in file "mysong.asm".
+
