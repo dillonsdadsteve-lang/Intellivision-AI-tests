@@ -11,18 +11,17 @@ http://spatula-city.org/~im14u2c/intv/ . They are not committed here
 (`tools/jzintv/` is git-ignored).
 
 ## Layout
-jzintv, as1600 and the other jzintv utilities (`*.exe`) 
-sit directly in `tools/`. The BIOS ROMs (`exec.bin`, `grom.bin`, `ECS.BIN`, `ECSPATCH.BIN`) are
-copyrighted and NOT in the repo: copy them into `tools/` on your own PC (they are git-ignored).
+`tools/` holds the Windows jzintv utilities (`as1600.exe`, `jzintv.exe`, `*.exe`), the SDL DLLs, a Linux jzintv
+package (`jzintv-20200712-linux-x86-64-sdl2/`), the IntyBASIC folder, the IntyBASIC SDK installer, and the Tracker
+files. The BIOS ROMs (`exec.bin`, `grom.bin`, `ECS.BIN`, `ECSPATCH.BIN`) are copyrighted and NOT in the repo: copy
+them into `tools/` on your own PC (they are git-ignored).
 
-IntyBASIC still needs compiling (not yet provided as an .exe):
-- Windows (MinGW/MSYS2): `g++ -O2 -o tools/intybasic/intybasic.exe tools/intybasic/*.cpp`
-- Linux/macOS: `make -C tools/intybasic`
-
-jzintv.exe needs the SDL runtime DLL next to it; if it fails to start, copy that DLL into `tools/`.
+See [../docs/TOOLS-STATUS.md](../docs/TOOLS-STATUS.md) for the version of each tool and what is out of date.
 
 ## Build and run
 - `.\scripts\build.ps1 src\hello.bas -Run`
 - `scripts/build.sh src/hello.bas run`
+- With JLP flash saves: `.\scripts\build.ps1 src\save_template.bas -Run -IbFlags "--jlp" -JzFlags "--jlp --jlp-savegame=save.jlp"`
 
 Shared includes such as `constants.bas` live in `src/`. Output goes to `build/` (git-ignored).
+See [../docs/saving-and-banking.md](../docs/saving-and-banking.md) for saving and bank switching.
